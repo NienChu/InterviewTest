@@ -5,6 +5,7 @@ import { OrderListComponent } from './pages/order/order-list/order-list.componen
 import { ProductDetailComponent } from './pages/order/product-detail/product-detail.component';
 
 const routes: Routes = [
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'order', component: OrderListComponent },
   { path: 'product/:id', component: ProductDetailComponent }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OrderCheck.Data;
 using OrderCheck.Model;
 using OrderCheck.Model.ViewModel;
@@ -9,6 +10,7 @@ namespace OrderCheck.Controllers {
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProductController : Controller {
 
         private readonly ApplicationDbContext _context;
@@ -34,6 +36,7 @@ namespace OrderCheck.Controllers {
                     return NotFound(new ErrorResponse("商品不存在"));
                 }
 
+                // get product detail
                 var model = new ProductViewModel { 
                     Description = product.Description,
                     Id = product.Id,

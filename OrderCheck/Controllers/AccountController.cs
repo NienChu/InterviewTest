@@ -35,12 +35,15 @@ namespace OrderCheck.Controllers {
             try {
                 var user = await _userManager.FindByNameAsync(model.UserName);
 
+                // check user password
                 if (!await _userManager.CheckPasswordAsync(user, model.Password)) {
-                    return BadRequest(new ErrorResponse("Login發生錯誤"));
+                    return BadRequest(new ErrorResponse("帳號密碼不正確"));
                 }
+
+                // user sign in
                 await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
 
-                // todo: jwt
+                // todo: generate jwt
 
                 return Ok();
             } catch (Exception) { 

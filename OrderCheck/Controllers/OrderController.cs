@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OrderCheck.Data;
 using OrderCheck.Model;
 using OrderCheck.Model.DataModel;
+using OrderCheck.Model.Enum;
 using OrderCheck.Model.ViewModel;
 using System;
 using System.Collections.Generic;
@@ -14,6 +16,7 @@ namespace OrderCheck.Controllers {
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class OrderController : Controller {
 
         private readonly ApplicationDbContext _context;
@@ -36,6 +39,7 @@ namespace OrderCheck.Controllers {
             try {
                 var user = await _userManager.GetUserAsync(User);
 
+                // get order list and related order items info
                 var result = await _context.Orders
                     .Include(o => o.OrderItems)
                         .ThenInclude(i => i.Product)
@@ -69,13 +73,17 @@ namespace OrderCheck.Controllers {
         [ProducesResponseType(400)]
         public async Task<IActionResult> UpdateOrderStatus(OrderUpdateViewModel model) {
             try {
-                using (var transaction = _context.Database.BeginTransaction()) {
-                    var orders = _context.Orders
+                var orders = _context.Orders
                         .Where(o => model.OrderIds.Contains(o.Id));
 
-                    // todo: order status validation
-                    // todo: user validation
+                // todo: verify other status changes
+                if (model.Status == OrderStatus.ToBeShipped
+                    && orders.Any(o => o.Status != OrderStatus.PaymentCompleted)) {
+                    return BadRequest(new ErrorResponse("變更訂單狀拒絕"));
+                }
 
+                using (var transaction = _context.Database.BeginTransaction()) {
+                    // modify order status
                     foreach (Order order in orders) {
                         order.Status = model.Status;
                     }
